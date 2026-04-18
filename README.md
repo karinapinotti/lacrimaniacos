@@ -1,67 +1,257 @@
+````markdown
 # lacrimaniacos
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Projeto desenvolvido como estudo de **Quarkus** na pós-graduação **UNIPDS - Java**.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+API REST com foco em:
+- Quarkus REST (endpoints)
+- REST Client (consumo de APIs)
+- OpenAPI / Swagger (documentação)
+- Fault Tolerance (resiliência)
+- Health Check (liveness / readiness)
 
-## Running the application in dev mode
+---
 
-You can run your application in dev mode that enables live coding using:
+## 🚀 Como rodar o projeto (passo a passo)
 
-```shell script
+### 1. Pré-requisitos
+
+- Java 21 (JDK obrigatório)
+- Maven (ou usar o wrapper `mvnw`)
+
+Verificar instalação:
+```bash
+java -version
+javac -version
+````
+
+Se não tiver `javac`:
+
+```bash
+sudo apt install openjdk-21-jdk
+```
+
+---
+
+### 2. Rodar em modo desenvolvimento (RECOMENDADO)
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+✔ O que acontece:
 
-## Packaging and running the application
+* Sobe servidor local
+* Ativa **live reload** (alterou código → atualiza sozinho)
+* Mostra logs em tempo real
+* Porta padrão: **8080**
 
-The application can be packaged using:
+---
 
-```shell script
-./mvnw package
+## 🌐 Acessos locais
+
+Após subir:
+
+* Aplicação:
+
+  ```
+  http://localhost:8080
+  ```
+
+* Swagger (testar API):
+
+  ```
+  http://localhost:8080/q/swagger-ui
+  ```
+
+* Dev UI (apenas dev mode):
+
+  ```
+  http://localhost:8080/q/dev
+  ```
+
+* Health Check:
+
+  ```
+  http://localhost:8080/q/health
+  ```
+
+---
+
+## 📦 Build e execução
+
+### Build padrão
+
+```bash
+./mvnw clean package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+Rodar:
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+```bash
+java -jar target/quarkus-app/quarkus-run.jar
+```
 
-If you want to build an _über-jar_, execute the following command:
+---
 
-```shell script
+### Uber JAR (tudo em um arquivo)
+
+```bash
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+Rodar:
 
-## Creating a native executable
+```bash
+java -jar target/*-runner.jar
+```
 
-You can create a native executable using:
+---
 
-```shell script
+### Native (opcional)
+
+```bash
 ./mvnw package -Dnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+Sem GraalVM:
 
-```shell script
+```bash
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/lacrimaniacos-1.0.0-SNAPSHOT-runner`
+Executar:
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+```bash
+./target/lacrimaniacos-1.0.0-SNAPSHOT-runner
+```
 
-## Related Guides
+---
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
+## ⚙️ Extensões usadas
 
-## Provided Code
+Adicionar extensão:
+
+```bash
+mvn quarkus:add-extension -Dextensions="nome-da-extensao"
+```
+
+Usadas no projeto:
+
+```bash
+mvn quarkus:add-extension -Dextensions="quarkus-rest"
+mvn quarkus:add-extension -Dextensions="quarkus-rest-client"
+mvn quarkus:add-extension -Dextensions="quarkus-smallrye-openapi"
+mvn quarkus:add-extension -Dextensions="quarkus-smallrye-fault-tolerance"
+mvn quarkus:add-extension -Dextensions="quarkus-smallrye-health"
+```
+
+---
+
+## 🧠 Conceitos aplicados
 
 ### REST
 
-Easily start your REST Web Services
+* API baseada em HTTP
+* Endpoints = URLs
+* Métodos: GET, POST, PUT, DELETE
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+### Quarkus Dev Mode
+
+* Live reload automático
+* Logs em tempo real
+* Dev UI integrada
+
+### Fault Tolerance
+
+* Resiliência a falhas
+* Retry, fallback, timeout
+
+### Health Check
+
+* **Liveness** → app está viva (se falhar, reinicia)
+* **Readiness** → app pronta (se falhar, não recebe tráfego)
+
+---
+
+## 📊 Logs
+
+Logs aparecem direto ao rodar:
+
+```bash
+./mvnw quarkus:dev
+```
+
+Para detalhar mais:
+
+```properties
+quarkus.log.level=DEBUG
+```
+
+Por pacote:
+
+```properties
+quarkus.log.category."org.karinabp".level=DEBUG
+```
+
+---
+
+## ⚠️ Problemas comuns (já resolvidos)
+
+### Erro Maven versão
+
+Quarkus exige Maven ≥ 3.9
+✔ Solução: usar `./mvnw`
+
+---
+
+### Erro "release version not supported"
+
+Causa: JDK incompatível ou só JRE
+
+✔ Solução:
+
+```bash
+sudo apt install openjdk-21-jdk
+```
+
+---
+
+### Erro SSH GitHub (Permission denied publickey)
+
+✔ Gerar chave:
+
+```bash
+ssh-keygen -t ed25519 -C "seuemail"
+```
+
+✔ Copiar:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+✔ Adicionar no GitHub
+
+---
+
+## 📁 Estrutura básica
+
+```
+src/
+ ├── main/java
+ │    └── resources (endpoints REST)
+ ├── main/resources
+ │    └── application.properties
+```
+
+---
+
+## 📚 Referência
+
+[https://quarkus.io/](https://quarkus.io/)
+
+```
+
+Se quiser depois eu deixo isso com cara de projeto profissional (README para recrutador).
+```

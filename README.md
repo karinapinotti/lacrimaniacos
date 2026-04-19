@@ -9,6 +9,7 @@ API REST com foco em:
 - OpenAPI / Swagger (documentação)
 - Fault Tolerance (resiliência)
 - Health Check (liveness / readiness)
+- Observabilidade (OpenTelemetry + Micrometer)
 
 ---
 
@@ -18,6 +19,7 @@ API REST com foco em:
 
 - Java 21 (JDK obrigatório)
 - Maven (ou usar o wrapper `mvnw`)
+- Docker (para observabilidade com Jaeger)
 
 Verificar instalação:
 ```bash
@@ -42,8 +44,8 @@ sudo apt install openjdk-21-jdk
 ✔ O que acontece:
 
 * Sobe servidor local
-* Ativa **live reload** (alterou código → atualiza sozinho)
-* Mostra logs em tempo real
+* Ativa **live reload**
+* Logs em tempo real
 * Porta padrão: **8080**
 
 ---
@@ -58,23 +60,91 @@ Após subir:
   http://localhost:8080
   ```
 
-* Swagger (testar API):
+* Swagger:
 
   ```
   http://localhost:8080/q/swagger-ui
   ```
 
-* Dev UI (apenas dev mode):
+* Dev UI:
 
   ```
   http://localhost:8080/q/dev
   ```
 
-* Health Check:
+* Health:
 
   ```
   http://localhost:8080/q/health
   ```
+
+* Métricas (Micrometer):
+
+  ```
+  http://localhost:8080/q/metrics
+  ```
+
+---
+
+## 🔍 Observabilidade
+
+### 📌 OpenTelemetry (Tracing)
+
+Responsável por rastrear requisições (**traces e spans**).
+
+#### Subir Jaeger (visualização)
+
+```bash
+sudo docker run --name=jaeger -d \
+-p 16686:16686 \
+-p 4317:4317 \
+-e COLLECTOR_OTLP_ENABLED=true \
+jaegertracing/all-in-one:latest
+```
+
+Acessar UI:
+
+```
+http://localhost:16686
+```
+
+#### Configuração no Quarkus
+
+```properties
+quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
+quarkus.otel.exporter.otlp.protocol=grpc
+```
+
+✔ Cada requisição gera:
+
+* 1 trace
+* múltiplos spans (HTTP, banco, etc)
+
+---
+
+### 📌 Micrometer (Métricas)
+
+Responsável por coletar dados numéricos da aplicação.
+
+#### Exemplo no projeto
+
+```java
+@Counted("counted.getPessoa")
+public List<Pessoa> getPessoa() {
+    return Pessoa.listAll();
+}
+```
+
+✔ Conta quantas vezes o endpoint foi chamado
+
+---
+
+### 📌 Integração
+
+* OpenTelemetry → análise de fluxo (tracing)
+* Micrometer → monitoramento (métricas)
+* Jaeger → visualização de traces
+* Prometheus → coleta de métricas
 
 ---
 
@@ -94,7 +164,7 @@ java -jar target/quarkus-app/quarkus-run.jar
 
 ---
 
-### Uber JAR (tudo em um arquivo)
+### Uber JAR
 
 ```bash
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
@@ -108,7 +178,7 @@ java -jar target/*-runner.jar
 
 ---
 
-### Native (opcional)
+### Native
 
 ```bash
 ./mvnw package -Dnative
@@ -130,67 +200,51 @@ Executar:
 
 ## ⚙️ Extensões usadas
 
-Adicionar extensão:
-
 ```bash
-mvn quarkus:add-extension -Dextensions="nome-da-extensao"
-```
-
-Usadas no projeto:
-
-```bash
-mvn quarkus:add-extension -Dextensions="quarkus-rest"
-mvn quarkus:add-extension -Dextensions="quarkus-rest-client"
-mvn quarkus:add-extension -Dextensions="quarkus-smallrye-openapi"
-mvn quarkus:add-extension -Dextensions="quarkus-smallrye-fault-tolerance"
-mvn quarkus:add-extension -Dextensions="quarkus-smallrye-health"
+./mvnw quarkus:add-extension -Dextensions="quarkus-rest"
+./mvnw quarkus:add-extension -Dextensions="quarkus-rest-client"
+./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-openapi"
+./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-fault-tolerance"
+./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-health"
+./mvnw quarkus:add-extension -Dextensions="quarkus-opentelemetry"
+./mvnw quarkus:add-extension -Dextensions="quarkus-micrometer"
+./mvnw quarkus:add-extension -Dextensions="quarkus-micrometer-registry-prometheus"
 ```
 
 ---
 
 ## 🧠 Conceitos aplicados
 
+### Observabilidade
+
+* **Traces** → caminho da requisição (OpenTelemetry)
+* **Métricas** → comportamento do sistema (Micrometer)
+
 ### REST
 
-* API baseada em HTTP
-* Endpoints = URLs
-* Métodos: GET, POST, PUT, DELETE
-
-### Quarkus Dev Mode
-
-* Live reload automático
-* Logs em tempo real
-* Dev UI integrada
+* Endpoints HTTP
+* GET, POST, PUT, DELETE
 
 ### Fault Tolerance
 
-* Resiliência a falhas
-* Retry, fallback, timeout
+* Retry, timeout, fallback
 
 ### Health Check
 
-* **Liveness** → app está viva (se falhar, reinicia)
-* **Readiness** → app pronta (se falhar, não recebe tráfego)
+* Liveness e Readiness
 
 ---
 
 ## 📊 Logs
 
-Logs aparecem direto ao rodar:
-
 ```bash
 ./mvnw quarkus:dev
 ```
 
-Para detalhar mais:
+Configuração:
 
 ```properties
 quarkus.log.level=DEBUG
-```
-
-Por pacote:
-
-```properties
 quarkus.log.category."org.karinabp".level=DEBUG
 ```
 
@@ -198,49 +252,44 @@ quarkus.log.category."org.karinabp".level=DEBUG
 
 ## ⚠️ Problemas comuns (já resolvidos)
 
-### Erro Maven versão
+### Maven incompatível
 
-Quarkus exige Maven ≥ 3.9
-✔ Solução: usar `./mvnw`
-
----
-
-### Erro "release version not supported"
-
-Causa: JDK incompatível ou só JRE
-
-✔ Solução:
+✔ usar:
 
 ```bash
-sudo apt install openjdk-21-jdk
+./mvnw
 ```
 
 ---
 
-### Erro SSH GitHub (Permission denied publickey)
+### Docker permission denied
 
-✔ Gerar chave:
-
-```bash
-ssh-keygen -t ed25519 -C "seuemail"
-```
-
-✔ Copiar:
+✔ solução:
 
 ```bash
-cat ~/.ssh/id_ed25519.pub
+sudo usermod -aG docker $USER
+newgrp docker
 ```
-
-✔ Adicionar no GitHub
 
 ---
+
+### Micrometer não reconhecido
+
+✔ solução:
+
+```bash
+./mvnw clean install
+```
+
+---
+
 
 ## 📁 Estrutura básica
 
 ```
 src/
  ├── main/java
- │    └── resources (endpoints REST)
+ │    └── resources
  ├── main/resources
  │    └── application.properties
 ```
@@ -253,5 +302,5 @@ src/
 
 ```
 
-Se quiser depois eu deixo isso com cara de projeto profissional (README para recrutador).
+Se quiser, o próximo passo é deixar isso com foco em portfólio (arquitetura + diagrama + stack).
 ```

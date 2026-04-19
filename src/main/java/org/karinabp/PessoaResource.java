@@ -3,7 +3,7 @@ package org.karinabp;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-
+import io.micrometer.core.annotation.Counted;
 import java.util.List;
 
 @Path("/pessoa")
@@ -12,6 +12,7 @@ import java.util.List;
 public class PessoaResource {
 
     @GET
+    @Counted(value = "counted.getPessoa")
     public List<Pessoa> getPessoa() {
         return Pessoa.listAll();
     }

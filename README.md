@@ -1,306 +1,186 @@
-````markdown
-# lacrimaniacos
+# 🎵 Lacrimaniacos API
 
-Projeto desenvolvido como estudo de **Quarkus** na pós-graduação **UNIPDS - Java**.
+API REST desenvolvida com **Java + Quarkus**, focada em microsserviços modernos, observabilidade e boas práticas de backend.
 
-API REST com foco em:
-- Quarkus REST (endpoints)
-- REST Client (consumo de APIs)
-- OpenAPI / Swagger (documentação)
-- Fault Tolerance (resiliência)
-- Health Check (liveness / readiness)
-- Observabilidade (OpenTelemetry + Micrometer)
-
----
-
-## 🚀 Como rodar o projeto (passo a passo)
-
-### 1. Pré-requisitos
-
-- Java 21 (JDK obrigatório)
-- Maven (ou usar o wrapper `mvnw`)
-- Docker (para observabilidade com Jaeger)
-
-Verificar instalação:
-```bash
-java -version
-javac -version
-````
-
-Se não tiver `javac`:
-
-```bash
-sudo apt install openjdk-21-jdk
-```
+Projeto criado para estudos avançados de:
+- Microsserviços
+- APIs REST
+- Observabilidade
+- Logging e métricas
+- REST Client
+- Panache ORM
+- Arquitetura moderna com Quarkus
 
 ---
 
-### 2. Rodar em modo desenvolvimento (RECOMENDADO)
+# 🚀 Tecnologias
 
-```bash
-./mvnw quarkus:dev
-```
-
-✔ O que acontece:
-
-* Sobe servidor local
-* Ativa **live reload**
-* Logs em tempo real
-* Porta padrão: **8080**
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Quarkus](https://img.shields.io/badge/Quarkus-4695EB?style=for-the-badge&logo=quarkus&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
+![REST API](https://img.shields.io/badge/REST_API-000000?style=for-the-badge)
+![Microservices](https://img.shields.io/badge/Microservices-1F1F1F?style=for-the-badge)
+![Observability](https://img.shields.io/badge/Observability-6A5ACD?style=for-the-badge)
 
 ---
 
-## 🌐 Acessos locais
+# 📚 Conceitos aplicados
 
-Após subir:
-
-* Aplicação:
-
-  ```
-  http://localhost:8080
-  ```
-
-* Swagger:
-
-  ```
-  http://localhost:8080/q/swagger-ui
-  ```
-
-* Dev UI:
-
-  ```
-  http://localhost:8080/q/dev
-  ```
-
-* Health:
-
-  ```
-  http://localhost:8080/q/health
-  ```
-
-* Métricas (Micrometer):
-
-  ```
-  http://localhost:8080/q/metrics
-  ```
+- Estruturação de APIs REST
+- Arquitetura em camadas
+- DTOs
+- Injeção de dependência
+- Tratamento de exceções
+- Microsserviços com Quarkus
+- REST Client
+- Panache ORM
+- Observabilidade
+- Health Check
+- Logging
+- Métricas
+- Configuração via application.properties
 
 ---
 
-## 🔍 Observabilidade
+# ⚙️ Tecnologias e recursos do Quarkus
 
-### 📌 OpenTelemetry (Tracing)
+## 🔹 RESTEasy Reactive / Web
 
-Responsável por rastrear requisições (**traces e spans**).
+Criação de endpoints REST performáticos utilizando Quarkus.
 
-#### Subir Jaeger (visualização)
-
-```bash
-sudo docker run --name=jaeger -d \
--p 16686:16686 \
--p 4317:4317 \
--e COLLECTOR_OTLP_ENABLED=true \
-jaegertracing/all-in-one:latest
-```
-
-Acessar UI:
-
-```
-http://localhost:16686
-```
-
-#### Configuração no Quarkus
-
-```properties
-quarkus.otel.exporter.otlp.endpoint=http://localhost:4317
-quarkus.otel.exporter.otlp.protocol=grpc
-```
-
-✔ Cada requisição gera:
-
-* 1 trace
-* múltiplos spans (HTTP, banco, etc)
-
----
-
-### 📌 Micrometer (Métricas)
-
-Responsável por coletar dados numéricos da aplicação.
-
-#### Exemplo no projeto
+Exemplo:
 
 ```java
-@Counted("counted.getPessoa")
-public List<Pessoa> getPessoa() {
-    return Pessoa.listAll();
+@Path("/bands")
+@GET
+public List<Band> getAll() {
+    return Band.listAll();
 }
 ```
 
-✔ Conta quantas vezes o endpoint foi chamado
+---
+
+## 🔹 Panache ORM
+
+Simplificação da camada de persistência com Hibernate Panache.
+
+Exemplo:
+
+```java
+Band.findById(id);
+Band.listAll();
+```
+
+Reduz bastante código boilerplate comparado ao JPA tradicional.
 
 ---
 
-### 📌 Integração
+## 🔹 REST Client
 
-* OpenTelemetry → análise de fluxo (tracing)
-* Micrometer → monitoramento (métricas)
-* Jaeger → visualização de traces
-* Prometheus → coleta de métricas
+Comunicação entre microsserviços e APIs externas utilizando REST Client do Quarkus.
 
----
+Exemplo:
 
-## 📦 Build e execução
-
-### Build padrão
-
-```bash
-./mvnw clean package
-```
-
-Rodar:
-
-```bash
-java -jar target/quarkus-app/quarkus-run.jar
-```
-
----
-
-### Uber JAR
-
-```bash
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
-
-Rodar:
-
-```bash
-java -jar target/*-runner.jar
+```java
+@RegisterRestClient
+public interface ExternalServiceClient {
+}
 ```
 
 ---
 
-### Native
+## 🔹 Observabilidade
+
+Monitoramento da aplicação com:
+
+- Health Check
+- Métricas
+- Logs estruturados
+
+Endpoints:
 
 ```bash
-./mvnw package -Dnative
-```
-
-Sem GraalVM:
-
-```bash
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-Executar:
-
-```bash
-./target/lacrimaniacos-1.0.0-SNAPSHOT-runner
+/q/health
+/q/metrics
 ```
 
 ---
 
-## ⚙️ Extensões usadas
+# 📂 Estrutura do projeto
 
 ```bash
-./mvnw quarkus:add-extension -Dextensions="quarkus-rest"
-./mvnw quarkus:add-extension -Dextensions="quarkus-rest-client"
-./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-openapi"
-./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-fault-tolerance"
-./mvnw quarkus:add-extension -Dextensions="quarkus-smallrye-health"
-./mvnw quarkus:add-extension -Dextensions="quarkus-opentelemetry"
-./mvnw quarkus:add-extension -Dextensions="quarkus-micrometer"
-./mvnw quarkus:add-extension -Dextensions="quarkus-micrometer-registry-prometheus"
+src
+ ├── main
+ │    ├── java
+ │    │     └── br/com/pinotti
+ │    └── resources
+ │
+ └── test
 ```
 
 ---
 
-## 🧠 Conceitos aplicados
+# ⚙️ Como executar
 
-### Observabilidade
+## Clonar projeto
 
-* **Traces** → caminho da requisição (OpenTelemetry)
-* **Métricas** → comportamento do sistema (Micrometer)
-
-### REST
-
-* Endpoints HTTP
-* GET, POST, PUT, DELETE
-
-### Fault Tolerance
-
-* Retry, timeout, fallback
-
-### Health Check
-
-* Liveness e Readiness
+```bash
+git clone https://github.com/karinapinotti/lacrimaniacos.git
+```
 
 ---
 
-## 📊 Logs
+## Entrar na branch
+
+```bash
+git checkout feature/aula9_observability
+```
+
+---
+
+## Executar aplicação
 
 ```bash
 ./mvnw quarkus:dev
 ```
 
-Configuração:
-
-```properties
-quarkus.log.level=DEBUG
-quarkus.log.category."org.karinabp".level=DEBUG
-```
-
----
-
-## ⚠️ Problemas comuns (já resolvidos)
-
-### Maven incompatível
-
-✔ usar:
+Aplicação sobe em:
 
 ```bash
-./mvnw
+http://localhost:8080
 ```
 
 ---
 
-### Docker permission denied
+# 🧠 Objetivo do projeto
 
-✔ solução:
-
-```bash
-sudo usermod -aG docker $USER
-newgrp docker
-```
-
----
-
-### Micrometer não reconhecido
-
-✔ solução:
-
-```bash
-./mvnw clean install
-```
+Projeto desenvolvido para prática de:
+- Quarkus
+- Microsserviços
+- REST APIs
+- REST Client
+- Panache ORM
+- Backend Java moderno
+- Observabilidade
+- Monitoramento de aplicações
 
 ---
 
+# 👩‍💻 Autora
 
-## 📁 Estrutura básica
+Karina Pinotti
 
-```
-src/
- ├── main/java
- │    └── resources
- ├── main/resources
- │    └── application.properties
-```
+💼 Software Engineer | Data Engineer  
+☁️ Java • Quarkus • Spring Boot • Cloud • Data Engineering
+
+🔗 GitHub:
+https://github.com/karinapinotti
+
+🔗 LinkedIn:
+https://www.linkedin.com/in/karina-bruschi-pinotti/
 
 ---
 
-## 📚 Referência
+# 📌 Status
 
-[https://quarkus.io/](https://quarkus.io/)
-
-```
-
-Se quiser, o próximo passo é deixar isso com foco em portfólio (arquitetura + diagrama + stack).
-```
+🚧 Projeto em evolução para estudos e aprimoramento técnico.
